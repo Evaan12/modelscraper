@@ -3,14 +3,8 @@ import pandas as pd
 import time
 
 def categorize_domain(tags, model_name, task):
-    """
-    Scans the model's tags, name, and task to determine its domain.
-    """
-    # Combine all text into one lowercase string to search through easily
     text_to_search = f"{' '.join(tags if tags else [])} {model_name} {task}".lower()
     
-    # Define our Domains and the keywords associated with them
-    # YOU CAN EDIT OR ADD TO THESE KEYWORDS!
     domain_keywords = {
         "Healthcare & Medicine": ["health", "medic", "clinic", "bio", "covid", "disease", "hospital", "doctor", "cancer", "xray"],
         "Finance & Economy": ["finance", "bank", "stock", "trade", "econom", "rupee", "business", "market"],
@@ -21,12 +15,10 @@ def categorize_domain(tags, model_name, task):
         "Agriculture & Environment": ["agri", "farm", "crop", "plant", "soil", "weather", "climate", "forest"]
     }
     
-    # Check if any keyword exists in the model's text
     for domain, keywords in domain_keywords.items():
         if any(keyword in text_to_search for keyword in keywords):
             return domain
             
-    # If no keywords match, assign to Uncategorized
     return "Uncategorized"
 
 def main():
@@ -52,12 +44,10 @@ def main():
                         continue
                     seen_models.add(model.modelId)
                     
-                    # Extract basic info safely
                     tags = model.tags if model.tags else []
                     model_name = model.modelId
                     task = model.pipeline_tag if model.pipeline_tag else ""
                     
-                    # Group the model into a domain!
                     domain = categorize_domain(tags, model_name, task)
                     
                     model_info = {
@@ -72,7 +62,7 @@ def main():
                     }
                     all_models.append(model_info)
                 
-                break # Success! Break out of retry loop
+                break 
                 
             except Exception as e:
                 print(f"⚠️ Connection interrupted. (Attempt {attempt + 1} of {max_retries}). Retrying in 5 seconds...")
@@ -85,7 +75,6 @@ def main():
     if len(all_models) > 0:
         df = pd.DataFrame(all_models)
         
-        # --- NEW: Sort the Excel sheet by Domain (A->Z) and then by Downloads (Highest First) ---
         df = df.sort_values(by=["Domain", "Downloads"], ascending=[True, False])
         
         excel_filename = "Categorized_Nepalese_HF_Models.xlsx"
@@ -93,7 +82,6 @@ def main():
         
         print(f"Done! All data saved to '{excel_filename}'.\n")
         
-        # Print a quick summary to the terminal for you to see immediately
         print("📊 --- DOMAIN SUMMARY --- 📊")
         print(df['Domain'].value_counts().to_string())
         
